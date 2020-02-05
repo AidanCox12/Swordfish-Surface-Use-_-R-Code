@@ -1,7 +1,7 @@
 ##Making a histogram of Surface Use Accross Time and Day
 library(dplyr)
-DSU.110496 <- X110496_Archive %>% 
-  filter(Depth < -2)
+DSU.100976 <- X100976_Series %>% 
+  filter(Depth < 1)
 
 head(table(X110496_Archive$Depth))
 
@@ -18,7 +18,7 @@ ggplot(data = DSU.100976) +
   ggtitle("Daily Surface Use _ 100976")
 
 ggplot(data = Swordfish.Surface) +
-  geom_boxplot(mapping = aes(x = Age, y = Surface.Prop, color = Age)) +
+  geom_boxplot(mapping = aes(x = Age, y = Surface.Prop, color = Age))
 
 ##1.17.20 - Using onewaytests
 library(onewaytests)
@@ -82,3 +82,67 @@ ggplot(data = DSU.100976) +
   +   ggtitle("Daily Surface Use _ 100976") +
   +     ylab("Duration (minutes)") +
   +     xlab("Time of Day")
+
+#1.31.20/1.32.20 - Adding Resolution Column to DSU.[Individual] data.frames
+DSU."Individual"$Resolution <- Time.Resolution("Individual")
+
+Time.Resolution <- function(x) {
+  as.numeric(x[2,7] - x[1,7])
+}
+
+
+hms.Resolution <- function(x) {
+  tvalue <- hms(
+    Time.Resolution(x),
+    0, 0)
+}
+
+#correcting 100978 from data.frames
+Swordfish.Surface <- Swordfish.Surface[-c(16),]
+new <- data.frame(Age = 'SA', Individual = '100978', Surface.Prop = 0)
+Swordfish.Surface <- rbind(Swordfish.Surface, new)
+#AND
+SA <- SA[-c(2),]
+SA <- rbind(SA, new)
+
+#re-do statistics 
+xbar_0.5m <- mean(Swordfish.Surface$Surface.Prop)
+# - SEE 1.17.20 AND ONEWAYTESTS - #
+
+#2.4.20 - Streamlining Resolution function
+
+DSU <- function(x) {
+  as.name(paste0(DSU., x))
+} #Non-functional because DSU.100976 is not a name
+
+CallDSU <- function(x) {
+  View(
+    DSU(x)
+  )
+} #Disregard
+
+#Juvenile Adjustment: 
+DSU.98751$Seconds <- hms.Resolution(X98751_Series)
+DSU.104668$Seconds <- hms.Resolution(X104668_Series)
+DSU.104670$Seconds <- 300
+DSU.104671$Seconds <- hms.Resolution(X104671_Series)
+DSU.104672$Seconds <- hms.Resolution(X104672_Series)
+DSU.98721$Seconds <- hms.Resolution(X98721_Series)
+DSU.98722$Seconds <- hms.Resolution(X98722_Series)
+
+#SA Adjustment
+DSU.95975$Seconds <- hms.Resolution(X95975_Series)
+DSU.100976$Seconds <- hms.Resolution(X100976_Series)
+
+#Adult Adjustment
+DSU.110490$Seconds <- hms.Resolution(X110490_Series)
+DSU.110497$Seconds <- hms.Resolution(X110497_Series)
+DSU.110498$Seconds <- hms.Resolution(X110498_Series)
+DSU.106795$Seconds <- hms.Resolution(X106795_Series)
+DSU.110496$Seconds <- 5
+
+#Wrangling all_sword_hmmoce_locs
+unique(all_sword_hmmoce_locs[["ptt"]])
+all_sword_hmmoce_locs$ptt <- factor(all_sword_hmmoce_locs$ptt, levels = c("95975", "98721", "98722", "100976", "100980", seq(104668, 104672), "106788", "106795", "110490", "110491", "110496", "110497", "110498", "98751"))
+
+
