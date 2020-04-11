@@ -18,13 +18,13 @@ ggplot(data = DSU.100976) +
   ggtitle("Daily Surface Use _ 100976")
 
 ggplot(data = Swordfish.Surface) +
-  geom_boxplot(mapping = aes(x = Age, y = Surface.Prop, color = Age))
+  geom_boxplot(mapping = aes(x = Age, y = log(Surface.Minutes), color = Age))
 
 ##1.17.20 - Using onewaytests
 library(onewaytests)
-homog.test(Surface.Prop ~ Age, data = Swordfish.Surface, method = "Bartlett")
-nor.test(Surface.Prop ~ Age, data = Swordfish.Surface, method = "SW", plot = "qqplot-histogram")
-welch.test(Surface.Prop ~ Age, data = Swordfish.Surface, rate = 0.1)
+homog.test(Surface.Minutes ~ Age, data = Swordfish.Surface, method = "Bartlett")
+nor.test(Surface.Minutes ~ Age, data = Swordfish.Surface, method = "SW", plot = "qqplot-histogram")
+welch.test(Surface.Minutes ~ Age, data = Swordfish.Surface, rate = 0.1)
 
 ##1.23.20 - Using separate()
 library(tidyr)
@@ -533,6 +533,7 @@ minutes <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
            0)
 
+J$minutes <- minutes
 J$Hours <- J$minutes / 60
 J <- filter(J, J$minutes > 0)
 
@@ -544,7 +545,7 @@ ggplot(data = world) +
   geom_sf(fill = "antiquewhite") +
   geom_point(data = J, aes(lon, lat, fill = ptt, size = Hours), shape = 24, na.rm = TRUE) +
   geom_point(data =  J2, aes(lon, lat, color = ptt), size = 3, shape = 24, fill = NA, alpha = 0.25) +
-  annotate(geom = "text", x = -25, y = 25, label = "Atlantic Ocean", fontface = "italic", color = "grey22", size = 4) +
+  annotate(geom = "text", x = -24, y = 38.5, label = "Azores Islands", fontface = "italic", color = "grey22", size = 3) +
   annotation_scale(location = "br", width_hint = 0.5) +
   coord_sf(xlim = c(-38, -21.5), ylim = c(27,42), expand = FALSE) +
   xlab("Longitude") +
@@ -555,7 +556,7 @@ ggplot(data = world) +
 ggplot(data = world) +
   geom_sf(fill = "antiquewhite") +
   geom_point(data = J, aes(lon, lat, fill = ptt, size = Hours), shape = 24, na.rm = TRUE) +
-  annotate(geom = "text", x = -30, y = 25, label = "Atlantic Ocean", fontface = "italic", color = "grey22", size = 4) +
+  annotate(geom = "text", x = -24, y = 38.5, label = "Azores Islands", fontface = "italic", color = "grey22", size = 3) +
   annotation_scale(location = "br", width_hint = 0.5) +
   coord_sf(xlim = c(-38, -21.5), ylim = c(27,42), expand = FALSE) +
   xlab("Longitude") +
@@ -662,12 +663,368 @@ A2 <- filter(A2, A2$Minutes == 0 )
 
 ggplot(data = world) +
   geom_sf(fill = "antiquewhite") +
-  geom_point(data = A, aes(lon, lat, fill = ptt, size = Minutes), shape = 24, na.rm = TRUE) +
-  geom_point(data =  A2, aes(lon, lat, color = ptt), size = 3, shape = 24, fill = NA, alpha = 0.25) +
+  geom_point(data = A, aes(lon, lat, fill = ptt, size = Minutes), shape = 21, na.rm = TRUE) +
+  geom_point(data =  A2, aes(lon, lat, color = ptt), size = 3, shape = 21, fill = NA, alpha = 0.25) +
   annotate(geom = "text", x = -65, y = 40, label = "Atlantic Ocean", fontface = "italic", color = "grey22", size = 3) +
   annotation_scale(location = "bl", width_hint = 0.5) +
   coord_sf(xlim = c(-77, -35.5), ylim = c(18,47), expand = FALSE) +
   xlab("Longitude") +
   ylab("Latitude") +
+  ggtitle("Surface locations among adult swords") +
+  theme(panel.grid.major = element_line(color = gray(0.5), linetype = "blank", size = 0.5), panel.background = element_rect(fill = "aliceblue"))
+
+#3.13.20 surface use by weight and month
+
+weight <- c(68.2, 81.8, 81.8, 65.9, 100.0, 90.9, 90.9, 19.5, 23.5, 17.5, 10.0, 50.0, 56.8, 45.5, 11.0, 12.0, 11.0, 61.4)
+Swordfish.Surface$Weight <- weight
+
+surftime <- c(0, 480, 0, 10, 5, 0, 360, 145, 5, 3365, 9215, 1260, 2440, 0, 0, 0, 360, 33093)
+Swordfish.Surface$Surface.Minutes <- surftime
+
+ggplot(data = Swordfish.Surface, aes(x = Weight, y = Surface.Minutes/60, color = Age)) +
+  geom_boxplot(aes(group = Age, alpha = 10),color = "grey", width = 0.25, position = "dodge", outlier.shape = NA, show.legend = FALSE) +
+  geom_point(aes(shape = Age), position = "jitter") +
+  geom_text(aes(label = ifelse((Surface.Prop > 0.1), paste(Individual, "\n", Weight, ",", Surface.Minutes/60), "")), hjust = 0, nudge_x = 3, nudge_y = -0.005, show.legend = FALSE) +
+  xlab("Weight(kg)") +
+  ylab("Hours Spent Above 0.5m") +
+  theme_classic()
+
+
+jmonth <- c("OCT",  "OCT",  "OCT",  "OCT",  "OCT",  "OCT",  "OCT",
+            "OCT",  "OCT",  "OCT",  "OCT",  "NOV", "NOV", "NOV", 
+            "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+            "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+            "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+            
+            "OCT",  "OCT",  "OCT",  "OCT",  "OCT",  "OCT",  "OCT",
+            "OCT",  "OCT",  "OCT",  "OCT",  "NOV", "NOV", "NOV", 
+            "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+            "NOV", "NOV", "NOV", "NOV", "NOV",
+            
+            "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV",
+            "NOV", "NOV", "NOV", "NOV","NOV", "NOV", "NOV",
+            "NOV", "NOV", "DEC", "DEC", "DEC", "DEC", "DEC", 
+            "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+            "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+            "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+            "DEC", "DEC", "DEC", "DEC", "DEC", "JAN", "JAN", "JAN", 
+            "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", 
+            "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", 
+            "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", 
+            "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", 
+            "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", 
+            "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", 
+            "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", 
+            "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB",
+            "FEB", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", 
+            "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", 
+            "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", 
+            "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", 
+            "MAR", "MAR", "MAR", "MAR", "APR", "APR", "APR", 
+            "APR", "APR", "APR", "APR", "APR", "APR", "APR", 
+            "APR", "APR", "APR", 
+            
+            "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV",
+            "NOV", "NOV", "NOV", "NOV","NOV", "NOV", "NOV",
+            "NOV", "NOV", "DEC", "DEC", "DEC", "DEC", "DEC", 
+            "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+            "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+            "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+            "DEC", "DEC", "DEC", "DEC", "DEC", "JAN", "JAN", "JAN", 
+            "JAN", "JAN", "JAN", "JAN", "JAN", "JAN",
+            
+            
+            "OCT",  "OCT", "OCT",  "OCT",  "OCT",  "OCT",  "NOV",
+            "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV",
+            "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV",
+            "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+            "NOV", "NOV", "NOV", "NOV", "NOV", "DEC", "DEC", "DEC",
+            "DEC", "DEC","DEC", "DEC", "DEC", "DEC", "DEC", "DEC",
+            "DEC","DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+            "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC",
+            "DEC", "DEC", "DEC", "DEC", "JAN", "JAN", "JAN","JAN", "JAN",
+            "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN",
+            "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN",
+            "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN",
+            "JAN", "JAN", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB",
+            "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", 
+            "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB",
+            "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "MAR",
+            "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", 
+            "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", 
+            "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR")
+
+
+J$Month <- jmonth
+J$Month <- factor(J$Month, levels = c("OCT", "NOV", "DEC", "JAN", "FEB", "MAR", "APR"), ordered = TRUE)
+
+uno <- filter(J, Month == "OCT")
+dos <- filter(J, Month == "NOV")
+tres <- filter(J, Month == "DEC")
+quatro <- filter(J, Month == "JAN")
+cinco <- filter(J, Month == "FEB")
+seis <- filter(J, Month == "MAR")
+siete <- filter(J, Month == "APR")
+
+sum(uno$Hours)
+sum(dos$Hours)
+sum(tres$Hours)
+sum(quatro$Hours)
+sum(cinco$Hours)
+sum(seis$Hours)
+sum(siete$Hours)
+
+month <- c("OCT", "NOV", "DEC", "JAN", "FEB", "MAR", "APR")
+omonth <- factor(month, c("OCT", "NOV", "DEC", "JAN", "FEB", "MAR", "APR"), ordered = TRUE)
+
+J <- data.frame(Month = omonth, 
+                Hours = c(0.08333333, 39.16667, 116.8333, 37.41667, 20.16667, 4.833333, 0.5), 
+                Obs = c(28, 103, 93, 71, 58, 55, 13))
+
+ggplot(data = J, aes(x = Month, y = Hours)) +
+  geom_col(aes(fill = Month)) +
+  xlab("Month") + 
+  ylab("Surface Hours per Day") +
+  theme_classic()
+
+#3.19.20 Monthly Surface Use for Adults and Sub.Adults
+
+A3 <- rbind(uno, dos, tres, quatro, cinco)
+
+amonth <- c(
+  "SEP", "SEP","SEP", "SEP", "SEP", "SEP", "SEP", 
+  "SEP", "SEP", "SEP", "SEP", "SEP", "SEP", "SEP", 
+  "SEP", "SEP", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+  "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+  
+  "SEP", "SEP", "SEP", "SEP", "SEP", "SEP", "SEP", 
+  "SEP", "SEP", "SEP", "SEP", "SEP", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "DEC", "DEC", "DEC", "DEC", 
+  "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+  "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+  
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "DEC", "DEC", "DEC", "DEC", 
+  "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+  "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+  "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+  "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "JAN", 
+  "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", 
+  "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", 
+  "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", 
+  "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN", 
+  "JAN", "JAN", "FEB", "FEB", "FEB", "FEB", "FEB", 
+  "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", 
+  "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", 
+  "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", 
+  "FEB", "FEB", "FEB", "MAR", "MAR", "MAR", "MAR", 
+  "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", 
+  "MAR", "MAR", "MAR", 
+  
+  "SEP", "SEP", "SEP", "SEP", "SEP", "SEP", "SEP", 
+  "SEP", "SEP", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", 
+  "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+  "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+  "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+  
+  "SEP", "SEP", "SEP", "SEP", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", "OCT", 
+  "NOV", "NOV", "NOV", "NOV", "NOV", "NOV"
+)
+
+A3$Month <- amonth
+A3$Minutes <- minutes
+A3$Month <- factor(A3$Month, levels = c("SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR"), ordered = TRUE)
+
+cero <- filter(A3, Month == "SEP")
+uno <- filter(A3, Month == "OCT")
+dos <- filter(A3, Month == "NOV")
+tres <- filter(A3, Month == "DEC")
+quatro <- filter(A3, Month == "JAN")
+cinco <- filter(A3, Month == "FEB")
+seis <- filter(A3, Month == "MAR")
+
+sum(cero$Minutes)
+sum(uno$Minutes)
+sum(dos$Minutes, na.rm = TRUE)
+sum(tres$Minutes)
+sum(quatro$Minutes)
+sum(cinco$Minutes)
+sum(seis$Minutes)
+
+month <- c("SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR")
+omonth <- factor(month, c("SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR"), ordered = TRUE)
+
+A3 <- data.frame(Month = omonth, 
+                Minutes = c(430, 206.496, 6973.822, 11437.41, 10001.32, 4325.492, 61.5797), 
+                Obs = c(41, 139, 126, 84, 31, 29, 14))
+
+ggplot(data = A3, aes(x = Month, y = (Minutes/60)/Obs)) +
+  geom_col(aes(fill = Month)) +
+  xlab("Month") + 
+  ylab("Surface Hours per Day") +
+  theme_classic()
+
+---
+uno <- filter(all_sword_hmmoce_locs, all_sword_hmmoce_locs$ptt == "95975")
+dos <- filter(all_sword_hmmoce_locs, all_sword_hmmoce_locs$ptt == "100976")
+
+unique(uno$date)
+unique(dos$date)
+
+samonth <- c("JAN", "JAN", "JAN", "JAN", "JAN", "JAN", "JAN",
+             "JAN", "JAN", "JAN", "JAN", "JAN", "FEB", "FEB", "FEB", 
+             "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", 
+             "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", 
+             "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", "FEB", 
+             "FEB", "FEB", "FEB", "FEB", "MAR", "MAR", "MAR",
+             "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", 
+             "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", 
+             "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", 
+             "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", "MAR", 
+             "APR", "APR", "APR", "APR", "APR", "APR", "APR", 
+             "APR", "APR", "APR", "APR", "APR", "APR", "APR", 
+             "APR", "APR", "APR", "APR", "APR", "APR", "APR", 
+             "APR", "APR", "APR", "APR", "APR", "APR", "APR", 
+             "APR", "APR", "MAY", "MAY", "MAY", "MAY", "MAY", 
+             "MAY", "MAY", "MAY", "MAY", "MAY", "MAY", "MAY", 
+             "MAY", "MAY", "MAY", "MAY", "MAY", "MAY", "MAY", 
+             "MAY", "MAY", "MAY", "MAY", "MAY", "MAY", "MAY", 
+             "MAY", "MAY", "MAY", "MAY", "MAY", "JUN", "JUN", 
+             "JUN", "JUN", "JUN", "JUN", "JUN", "JUN", "JUN", 
+             "JUN", "JUN", "JUN", "JUN", "JUN", "JUN", "JUN", 
+             "JUN", "JUN", "JUN", "JUN", "JUN", "JUN", "JUN", 
+             "JUN", "JUN", "JUN", "JUN", "JUN", "JUN", "JUN", 
+             "JUL", "JUL", "JUL", "JUL", "JUL", "JUL", "JUL", 
+             "JUL", "JUL", "JUL", "JUL", "JUL", "JUL", "JUL", 
+             "JUL", "JUL", "JUL", "JUL", "JUL", "JUL", 
+             
+             "NOV", "NOV", "NOV", "NOV", "NOV", "NOV", "DEC",
+             "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+             "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", "DEC", 
+             "DEC", "DEC", "DEC", "DEC"
+             )
+
+SA <- rbind(uno, dos)
+SA$Month <- samonth
+SA$Minutes <- minutes
+SA$Hours <- SA$Minutes/60
+SA$Month <- factor(SA$Month, levels = c("NOV", "DEC", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL"))
+
+uno <- filter(SA, Month == "NOV")
+dos <- filter(SA, Month == "DEC")
+tres <- filter(SA, Month == "JAN")
+quatro <- filter(SA, Month == "FEB")
+cinco <- filter(SA, Month == "MAR")
+seis <- filter(SA, Month == "APR")
+siete <- filter(SA, Month == "MAY")
+ocho <- filter(SA, Month == "JUN")
+nueve <- filter(SA, Month == "JUL")
+
+sum(uno$Hours)
+sum(dos$Hours)
+sum(tres$Hours)
+sum(quatro$Hours)
+sum(cinco$Hours)
+sum(seis$Hours)
+sum(siete$Hours)
+sum(ocho$Hours)
+sum(nueve$Hours)
+
+month <- c("NOV", "DEC", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL")
+omonth <- factor(month, c("NOV", "DEC", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL"), ordered = TRUE)
+
+SA <- data.frame(
+  Month = omonth, 
+  Hours = c(11.5, 9.5, 0, 0, 0, 2.166667, 36.16667, 2.333333, 0), 
+  Obs = c(6, 19, 12, 28, 31, 30, 31, 30, 20)
+)
+
+ggplot(data = SA, aes(x = Month, y = Hours/Obs)) +
+  geom_col(aes(fill = Month)) +
+  xlab("Month") + 
+  ylab("Surface Hours per Day") +
+  theme_classic()
+---
+library("ggspatial")
+library("rnaturalearth")
+library("rnaturalearthdata")
+library("rgeos")
+
+SubB <- filter(SubA, SubA$minutes > 0)
+SubB$Month <- factor(SubB$Month, c("NOV", "DEC", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL"), ordered = TRUE)
+
+ggplot(data = world) +
+  geom_sf(fill = "antiquewhite") +
+  geom_point(data = SubB, aes(lon, lat, color = Month, size = Hours, shape = ptt), na.rm = TRUE) +
+  annotate(geom = "text", x = -57, y = 34, label = "Atlantic Ocean", fontface = "italic", color = "grey22", size = 5) +
+  annotation_scale(location = "bl", width_hint = 0.5) +
+  coord_sf(xlim = c(-82, -50), ylim = c(15,45), expand = FALSE) +
+  xlab("Longitude") +
+  ylab("Latitude") +
+  ggtitle("Surface locations among sub adult swords") +
+  theme(panel.grid.major = element_line(color = gray(0.5), linetype = "blank", size = 0.5), panel.background = element_rect(fill = "aliceblue"))
+
+
+J2 <- filter(J, J$minutes > 0)
+J2$Month <- factor(J2$Month, c("OCT", "NOV", "DEC", "JAN", "FEB", "MAR", "APR"), ordered = FALSE)
+
+ggplot(data = world) +
+  geom_sf(fill = "antiquewhite") +
+  geom_point(data = J2, aes(lon, lat, color = Month, size = Hours, shape = ptt), na.rm = TRUE) +
+  annotate(geom = "text", x = -24, y = 38.5, label = "Azores Islands", fontface = "italic", color = "grey22", size = 3) +
+  annotation_scale(location = "br", width_hint = 0.5) +
+  coord_sf(xlim = c(-38, -21.5), ylim = c(27,42), expand = FALSE) +
+  xlab("Longitude") +
+  ylab("Latitude") +
   ggtitle("Surface locations among juvenile swords") +
+  theme(panel.grid.major = element_line(color = gray(0.5), linetype = "blank", size = 0.5), panel.background = element_rect(fill = "aliceblue"))
+
+A2 <- filter(A, A$Minutes > 0)
+A2$Month <- factor(A2$Month, levels = c("SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR"), ordered = FALSE)
+A2$Hours <- A2$Minutes / 60
+
+ggplot(data = world) +
+  geom_sf(fill = "antiquewhite") +
+  geom_point(data = A2, aes(lon, lat, color = Month, size = Hours), shape = 23, na.rm = TRUE) +
+  geom_point(data = SubB, aes(lon, lat, color = Month, size = Hours), shape = 22, na.rm = TRUE) +
+  annotate(geom = "text", x = -65, y = 40, label = "Atlantic Ocean", fontface = "italic", color = "grey22", size = 3) +
+  annotation_scale(location = "bl", width_hint = 0.5) +
+  coord_sf(xlim = c(-77, -35.5), ylim = c(18,47), expand = FALSE) +
+  xlab("Longitude") +
+  ylab("Latitude") +
+  ggtitle("Surface locations among West Atlantic swords") +
   theme(panel.grid.major = element_line(color = gray(0.5), linetype = "blank", size = 0.5), panel.background = element_rect(fill = "aliceblue"))
